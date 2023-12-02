@@ -1,13 +1,13 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
+[RequireComponent(typeof(Rigidbody2D))]
 public class MovementController : MonoBehaviour
 {
-   public new Rigidbody2D rigibody { get; private set; }
+    private Rigidbody2D rb;
     private Vector2 direction = Vector2.down;
     public float speed = 5f;
 
+    [Header("Input")]
     public KeyCode inputUp = KeyCode.W;
     public KeyCode inputDown = KeyCode.S;
     public KeyCode inputLeft = KeyCode.A;
@@ -23,7 +23,7 @@ public class MovementController : MonoBehaviour
 
     private void Awake()
     {
-        rigibody = GetComponent<Rigidbody2D>();
+        rb = GetComponent<Rigidbody2D>();
         activeSpriteRenderer = spriteRendererDown;
     }
 
@@ -53,11 +53,10 @@ public class MovementController : MonoBehaviour
 
     private void FixedUpdate()
     {
-        Vector2 position = rigibody.position;
-        Vector2 translation = direction * speed * Time.fixedDeltaTime;
+        Vector2 position = rb.position;
+        Vector2 translation = speed * Time.fixedDeltaTime * direction;
 
-        rigibody.MovePosition(position + translation);
-
+        rb.MovePosition(position + translation);
     }
 
     private void SetDirection(Vector2 newDirection, AnimatedSpriteRenderer spriteRenderer)
@@ -73,4 +72,23 @@ public class MovementController : MonoBehaviour
         activeSpriteRenderer.idle = direction == Vector2.zero;
     }
 
+    private void OnTriggerEnter2D(Collider2D other)
+    {
+        if (other.gameObject.layer == LayerMask.NameToLayer("Explosion"))
+        {
+            DeathSequence();
+        }
+    }
+
+    private void DeathSequence()
+    {
+        enabled = false;
+        GetComponent<BombController>().enabled = false;
+
+        spriteRendererUp.enabled = false;
+        spriteRendererDown.enabled = false;
+        spriteRendererLeft.enabled = false;
+        spriteRendererRight.enabled = false;
+        spriteRendererDeath.enabled = true;
+    }
 }
